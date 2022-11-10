@@ -1,0 +1,8 @@
+*env/
+__pycache__
+.idea
+*.db
+*.html
+/assistant/*.html
+/assistant/*.db
+.env
