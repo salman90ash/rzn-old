@@ -14,6 +14,15 @@ from users.models import CustomUser
 
 
 # Create your views here.
+@csrf_exempt
+def tg_users(request):
+    try:
+        users = CustomUser.objects.values()
+        # print(users)
+        # result = json.dumps(users)
+        return HttpResponse(users, content_type="application/json")
+    except ObjectDoesNotExist:
+        return HttpResponse(False)
 
 @csrf_exempt
 def tg_get_user(request, tg_chat_id):
@@ -158,7 +167,7 @@ def set_task_info(task, title_details=True):
 @transaction.atomic
 def tg_list_tasks(request, tg_chat_id):
     user = CustomUser.objects.get(tg_chat_id=tg_chat_id)
-    tasks = Tasks.objects.filter(user=user.id)
+    tasks = Tasks.objects.filter(user=user.id, is_active=True)
     list_result = []
     title_details = user.task_title_detail
     if title_details:
