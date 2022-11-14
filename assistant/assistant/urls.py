@@ -20,7 +20,7 @@ from rest_framework import routers
 # router = routers.SimpleRouter()
 # router.register(r'tasks', TaskViewSet)
 from tg_bot.views import tg_create_user, tg_create_task, tg_get_user, tg_send_updates, tg_list_tasks, tg_del_task,\
-    tg_update_tasks, tg_change_notice_1, tg_users, task_detail
+    tg_update_tasks, tg_change_notice_1, tg_users, tg_task_detail
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,7 +28,7 @@ urlpatterns = [
     path('tg/create_user/', tg_create_user),
     path('tg/users/', tg_users),
     path('tg/users/<int:tg_chat_id>/', tg_get_user),
-    path('tg/users/<int:tg_chat_id>/task_detail', task_detail),
+    path('tg/users/<int:tg_chat_id>/task_detail/', tg_task_detail),
     path('tg/create_task/', tg_create_task),
     path('tg/tg_send_updates/', tg_send_updates),
     path('tg/list_tasks/<int:tg_chat_id>/', tg_list_tasks),
