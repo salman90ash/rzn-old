@@ -11,7 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
 from rzn.models import TasksKey, TasksNotice, TasksType, TasksData, Tasks
 from users.models import CustomUser
-
+from django.core import serializers
 
 # Create your views here.
 @csrf_exempt
@@ -28,7 +28,12 @@ def tg_users(request):
 def tg_get_user(request, tg_chat_id):
     try:
         user = CustomUser.objects.get(tg_chat_id=tg_chat_id)
-        return HttpResponse(user.tg_chat_id)
+        user_dict = {
+            "id": user.id,
+            "tg_chat_id": user.tg_chat_id,
+            "task_title_detail": user.task_title_detail
+        }
+        return HttpResponse(json.dumps(user_dict), content_type="application/json")
     except ObjectDoesNotExist:
         return HttpResponse(False)
 
@@ -210,10 +215,25 @@ def tg_update_tasks(request):
     return HttpResponse(result, content_type="application/json")
     # actions.update_tasks()
 
-
+@csrf_exempt
 def tg_change_notice_1(request, task_id):
     task = TasksData.objects.get(id=task_id)
     notice = TasksNotice.objects.get(pk=1)
     task.notice = notice
     task.save()
     return HttpResponse(task, content_type="application/json")
+
+
+@csrf_exempt
+def task_detail(request, tg_chat_id):
+    if request.method == "GET":
+        user = CustomUser.objects.get(tg_chat_id=tg_chat_id)
+        return HttpResponse(json.dumps({"task_title_detail": f"{user.task_title_detail}"}), content_type="application/json")
+    elif request.method == "POST":
+        value = bool(request.POST.get("task_title_detail"))
+        user = CustomUser.objects.get(tg_chat_id=tg_chat_id)
+        user.task_title_detail = value
+        user.save()
+        return HttpResponse({"answer": "ok"}, content_type="application/json")
+    elif request.method == "DELETE":
+        pass
