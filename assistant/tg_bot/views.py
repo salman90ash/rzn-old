@@ -138,6 +138,7 @@ def tg_send_updates(request):
             url = task.url
             dict_result = {
                 'chat_id': user_tg_chat_id,
+                'taskdata_id': task.id,
                 'type': task_type,
                 'title': title,
                 'notice': notice_text,
@@ -212,7 +213,7 @@ def tg_del_task(request, task_id):
 
 @csrf_exempt
 def tg_update_tasks(request):
-    print('start update_tasks')
+    # print('start update_tasks')
     actions.update_tasks()
     result = json.dumps({'answer': 'ok'})
     return HttpResponse(result, content_type="application/json")
@@ -220,8 +221,8 @@ def tg_update_tasks(request):
 
 
 @csrf_exempt
-def tg_change_notice_1(request, task_id):
-    task = TasksData.objects.get(id=task_id)
+def tg_change_notice_1(request, taskdata_id):
+    task = TasksData.objects.get(id=taskdata_id)
     notice = TasksNotice.objects.get(pk=1)
     task.notice = notice
     task.save()
@@ -246,11 +247,3 @@ def tg_task_detail(request, tg_chat_id):
         return HttpResponse(json.dumps({"task_title_detail": f"{user.task_title_detail}"}),
                             content_type="application/json")
 
-
-@csrf_exempt
-def rzn(request):
-    if request.method == "GET":
-        reply = actions.get_page('https://roszdravnadzor.gov.ru/services/cab_mi?type_search=1&letters=0&in_doc_num=95180&in_doc_dt=21.11.2022')
-        return HttpResponse(reply)
-    elif request.method == "POST":
-        pass

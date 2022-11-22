@@ -212,6 +212,7 @@ def validate_last_row_le(row: str):
 
 def completeness_check_cab_mi(obj: TasksKey):
     data = obj.value
+
     last_row = get_last_row_cam_mi(data)
     return validate_last_row_cab_mi(last_row)
 
@@ -249,5 +250,6 @@ def get_title_task_details(title, task_type_id, task_type_title, number, date):
 
 
 def update_tasks():
+    print('start update_tasks')
     get_updates()
-    completeness_check_all()
+    # completeness_check_all()
