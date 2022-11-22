@@ -245,3 +245,12 @@ def tg_task_detail(request, tg_chat_id):
         user.save()
         return HttpResponse(json.dumps({"task_title_detail": f"{user.task_title_detail}"}),
                             content_type="application/json")
+
+
+@csrf_exempt
+def rzn(request):
+    if request.method == "GET":
+        reply = actions.get_page('https://roszdravnadzor.gov.ru/services/cab_mi?type_search=1&letters=0&in_doc_num=95180&in_doc_dt=21.11.2022')
+        return HttpResponse(reply)
+    elif request.method == "POST":
+        pass
