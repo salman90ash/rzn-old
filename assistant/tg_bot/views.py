@@ -213,9 +213,10 @@ def tg_del_task(request, task_id):
 @csrf_exempt
 def tg_update_tasks(request):
     print('start update_tasks')
+    actions.update_tasks()
     result = json.dumps({'answer': 'ok'})
     return HttpResponse(result, content_type="application/json")
-    # actions.update_tasks()
+
 
 
 @csrf_exempt
