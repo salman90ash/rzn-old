@@ -2,7 +2,7 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from bs4 import BeautifulSoup
 import json
-from rzn.models import TasksData, TasksKey, TasksNotice
+from rzn.models import TasksData, TasksKey, TasksNotice, Tasks
 
 RZN_DOMAIN = 'https://roszdravnadzor.gov.ru'
 RZN_TYPES = [(1, 'РУ'), (2, 'Ввоз'), (3, 'Обращение', 'по вх.'), (4, 'ВИРД'), (5, 'Дубликат'),
@@ -212,7 +212,6 @@ def validate_last_row_le(row: str):
 
 def completeness_check_cab_mi(obj: TasksKey):
     data = obj.value
-
     last_row = get_last_row_cam_mi(data)
     return validate_last_row_cab_mi(last_row)
 
@@ -234,11 +233,17 @@ def completeness_check_all():
     for obj in objs:
         type_id = obj.type.pk
         key = TasksKey.objects.get(is_active=True, data_id=obj.pk)
+        print(completeness_check(key, type_id))
         if completeness_check(key, type_id):
-            notice = TasksNotice.objects.get(pk=1)
-            obj.notice_id = notice
+            print('completeness_check')
+            # notice = TasksNotice.objects.get(pk=1)
+            # obj.notice_id = notice
             obj.completed = True
             obj.is_active = False
+            tasks = Tasks.objects.filter(data_id=obj.pk)
+            for task in tasks:
+                task.is_active = False
+                task.save()
             obj.save()
     print('Проверка выполнена')
 
@@ -252,4 +257,4 @@ def get_title_task_details(title, task_type_id, task_type_title, number, date):
 def update_tasks():
     print('start update_tasks')
     get_updates()
-    # completeness_check_all()
+    completeness_check_all()

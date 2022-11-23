@@ -128,7 +128,7 @@ def tg_send_updates(request):
     tasks = TasksData.objects.filter(notice_id__gte=2)
     list_result = []
     for task in tasks:
-        tasks_title = Tasks.objects.filter(data=task.pk, is_active=True)
+        tasks_title = Tasks.objects.filter(data=task.pk)
         for task_title in tasks_title:
             notice_text = task.notice.title
             user_tg_chat_id = task_title.user.tg_chat_id
