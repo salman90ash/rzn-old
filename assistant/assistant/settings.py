@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-_ncve(6%m8x0or7345kmwgkb3noaec_5&3luu2g!hq2*$7i^ag
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(",")
 
 
 # Application definition
