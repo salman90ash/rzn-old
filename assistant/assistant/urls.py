@@ -25,14 +25,14 @@ from tg_bot.views import tg_create_user, tg_create_task, tg_get_user, tg_send_up
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('api/v1/', include(router.urls)),
-    path('tg/create_user/', tg_create_user),
-    path('tg/users/', tg_users),
-    path('tg/users/<int:tg_chat_id>/', tg_get_user),
-    path('tg/users/<int:tg_chat_id>/task_detail/', tg_task_detail),
-    path('tg/create_task/', tg_create_task),
-    path('tg/tg_send_updates/', tg_send_updates),
-    path('tg/list_tasks/<int:tg_chat_id>/', tg_list_tasks),
-    path('tg/del_tasks/<int:task_id>/', tg_del_task),
-    path('tg/update_tasks/', tg_update_tasks),
-    path('tg/tg_change_notice_1/<int:taskdata_id>/', tg_change_notice_1)
+    path('tg/api/v1/<str:token>/create_user/', tg_create_user),
+    path('tg/api/v1/<str:token>/users/', tg_users),
+    path('tg/api/v1/<str:token>/users/<int:tg_chat_id>/', tg_get_user),
+    path('tg/api/v1/<str:token>/users/<int:tg_chat_id>/task_detail/', tg_task_detail),
+    path('tg/api/v1/<str:token>/create_task/', tg_create_task),
+    path('tg/api/v1/<str:token>/tg_send_updates/', tg_send_updates),
+    path('tg/api/v1/<str:token>/list_tasks/<int:tg_chat_id>/', tg_list_tasks),
+    path('tg/api/v1/<str:token>/del_tasks/<int:task_id>/', tg_del_task),
+    path('tg/api/v1/<str:token>/update_tasks/', tg_update_tasks),
+    path('tg/api/v1/<str:token>/tg_change_notice_1/<int:taskdata_id>/', tg_change_notice_1)
 ]

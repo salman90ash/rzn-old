@@ -139,3 +139,5 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ]
 }
+
+API_TG_TOKEN = os.environ.get('API_TG_TOKEN')
