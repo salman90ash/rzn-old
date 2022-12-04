@@ -157,27 +157,25 @@ def tg_send_updates(request, token):
         return HttpResponse(result, content_type="application/json")
 
 
-def set_task_info(task, token, title_details=True):
-    global API_TG_TOKEN
-    if API_TG_TOKEN == token:
-        title = ''
-        if task.data.type.id == 6:
-            title = actions.get_title_task_details(task.title, task.data.type.id, task.data.type.title,
-                                                   task.data.dec_number, task.data.dec_date)
-        else:
-            title = actions.get_title_task_details(task.title, task.data.type.id, task.data.type.title,
-                                                   task.data.rzn_number, task.data.rzn_date)
-        if title_details:
-            return {
-                'id': task.id,
-                'title': title,
-                'url': task.data.url
-            }
+def set_task_info(task, title_details=True):
+    title = ''
+    if task.data.type.id == 6:
+        title = actions.get_title_task_details(task.title, task.data.type.id, task.data.type.title,
+                                               task.data.dec_number, task.data.dec_date)
+    else:
+        title = actions.get_title_task_details(task.title, task.data.type.id, task.data.type.title,
+                                               task.data.rzn_number, task.data.rzn_date)
+    if title_details:
         return {
             'id': task.id,
-            'title': f"{task.title} ({task.data.type.title})",
+            'title': title,
             'url': task.data.url
         }
+    return {
+        'id': task.id,
+        'title': f"{task.title} ({task.data.type.title})",
+        'url': task.data.url
+    }
 
 
 @csrf_exempt
