@@ -250,6 +250,5 @@ def get_title_task_details(title, task_type_id, task_type_title, number, date):
 
 
 def update_tasks():
-    print('start update_tasks')
     get_updates()
     # completeness_check_all()

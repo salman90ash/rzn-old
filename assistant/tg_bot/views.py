@@ -205,6 +205,12 @@ def tg_del_task(request, token, task_id):
             task = Tasks.objects.get(id=task_id)
             task.is_active = False
             task.save()
+            data_id = task.data.pk
+            tasks = Tasks.objects.filter(data=data_id, is_active=True)
+            if len(tasks) == 0:
+                data = TasksData.objects.get(id=data_id)
+                data.is_active = False
+                data.save()
             result_dict = {
                 "title": task.title,
                 "type_id": task.data.type.id,
