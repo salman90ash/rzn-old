@@ -1,5 +1,4 @@
 import json
-import pprint
 
 import rzn.actions as actions
 from django.shortcuts import render
@@ -14,6 +13,7 @@ from users.models import CustomUser
 from django.core import serializers
 from assistant.settings import API_TG_TOKEN
 from functools import wraps
+import datetime
 
 
 @csrf_exempt
@@ -51,7 +51,6 @@ def tg_create_user(request, token):
         tg_username = request.POST.get("tg_username")
         tg_first_name = request.POST.get("tg_first_name")
         tg_last_name = request.POST.get("tg_last_name")
-        # print('BODY', request.body)
         username = 'username_' + str(tg_chat_id)
         user = CustomUser(username=username, tg_chat_id=tg_chat_id)
         if tg_username:
@@ -159,24 +158,34 @@ def tg_send_updates(request, token):
 
 def set_task_info(task, title_details=True):
     title = ''
+    date = ''
     if task.data.type.id == 6:
         title = actions.get_title_task_details(task.title, task.data.type.id, task.data.type.title,
                                                task.data.dec_number, task.data.dec_date)
+        date = task.data.dec_date
     else:
         title = actions.get_title_task_details(task.title, task.data.type.id, task.data.type.title,
                                                task.data.rzn_number, task.data.rzn_date)
+        date = task.data.rzn_date
     if title_details:
         return {
             'id': task.id,
             'title': title,
-            'url': task.data.url
+            'url': task.data.url,
+            'date': date,
+            'date_created': task.date_created
         }
     return {
         'id': task.id,
         'title': f"{task.title} ({task.data.type.title})",
-        'url': task.data.url
+        'url': task.data.url,
+        'date': date,
+        'date_created': task.date_created
     }
 
+
+# date, DESC
+# date, ASC
 
 @csrf_exempt
 @transaction.atomic
@@ -193,7 +202,31 @@ def tg_list_tasks(request, token, tg_chat_id):
         else:
             for task in tasks:
                 list_result.append(set_task_info(task, False))
-        result = json.dumps(list_result)
+        type_sort = user.type_sort
+        new_list = []
+        if 'title' in type_sort:
+            if 'ASC' in type_sort:
+                new_list = sorted(list_result, key=lambda x: x['title'])
+            else:
+                new_list = sorted(list_result, key=lambda x: x['title'], reverse=True)
+        elif 'date' in type_sort:
+            if 'ASC' in type_sort:
+                new_list = sorted(list_result, key=lambda x: datetime.datetime.strptime(x['date'], '%d.%m.%Y').date())
+            else:
+                new_list = sorted(list_result, key=lambda x: datetime.datetime.strptime(x['date'], '%d.%m.%Y').date(),
+                                  reverse=True)
+        elif 'date_created' in type_sort:
+            if 'ASC' in type_sort:
+                new_list = sorted(list_result, key=lambda x: x['date_created'])
+            else:
+                new_list = sorted(list_result, key=lambda x: x['date_created'], reverse=True)
+
+        for obj in new_list:
+            if 'date' in obj:
+                del obj['date']
+            if 'date_created' in obj:
+                del obj['date_created']
+        result = json.dumps(new_list)
         return HttpResponse(result, content_type="application/json")
 
 
@@ -267,3 +300,34 @@ def tg_task_detail(request, token, tg_chat_id):
             user.save()
             return HttpResponse(json.dumps({"task_title_detail": f"{user.task_title_detail}"}),
                                 content_type="application/json")
+
+
+@csrf_exempt
+def tg_get_sort_info(request, token, tg_chat_id):
+    global API_TG_TOKEN
+    if API_TG_TOKEN == token:
+        try:
+            user = CustomUser.objects.get(tg_chat_id=tg_chat_id)
+            user_dict = {
+                "type_sort": user.type_sort
+            }
+            return HttpResponse(json.dumps(user_dict), content_type="application/json")
+        except ObjectDoesNotExist:
+            return HttpResponse(False)
+
+
+@csrf_exempt
+def tg_set_type_sort(request, token, tg_chat_id):
+    global API_TG_TOKEN
+    if API_TG_TOKEN == token:
+        try:
+            type_sort = request.POST.get("type_sort")
+            user = CustomUser.objects.get(tg_chat_id=tg_chat_id)
+            user.type_sort = type_sort
+            user.save()
+            user_dict = {
+                "type_sort": type_sort
+            }
+            return HttpResponse(json.dumps(user_dict), content_type="application/json")
+        except ObjectDoesNotExist:
+            return HttpResponse(False)

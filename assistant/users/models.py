@@ -11,6 +11,7 @@ class CustomUser(AbstractUser):
     task_title_detail = models.BooleanField(default=True, blank=True, verbose_name='Реквизиты задачи')
     comments = models.CharField(max_length=255, default='', verbose_name='Комментарий', blank=True)
     date_UPD = models.DateTimeField(auto_now=True, verbose_name='Дата обновления', blank=True)
+    type_sort = models.CharField(max_length=255, default='date_created_ASC', verbose_name='Telegram type sort')
 
     def __str__(self):
         return self.username

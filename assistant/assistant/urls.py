@@ -20,7 +20,7 @@ from rest_framework import routers
 # router = routers.SimpleRouter()
 # router.register(r'tasks', TaskViewSet)
 from tg_bot.views import tg_create_user, tg_create_task, tg_get_user, tg_send_updates, tg_list_tasks, tg_del_task,\
-    tg_update_tasks, tg_change_notice_1, tg_users, tg_task_detail
+    tg_update_tasks, tg_change_notice_1, tg_users, tg_task_detail, tg_get_sort_info, tg_set_type_sort
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +28,8 @@ urlpatterns = [
     path('tg/api/v1/<str:token>/create_user/', tg_create_user),
     path('tg/api/v1/<str:token>/users/', tg_users),
     path('tg/api/v1/<str:token>/users/<int:tg_chat_id>/', tg_get_user),
+    path('tg/api/v1/<str:token>/users/<int:tg_chat_id>/getSortInfo/', tg_get_sort_info),
+    path('tg/api/v1/<str:token>/users/<int:tg_chat_id>/setSort/', tg_set_type_sort),
     path('tg/api/v1/<str:token>/users/<int:tg_chat_id>/task_detail/', tg_task_detail),
     path('tg/api/v1/<str:token>/create_task/', tg_create_task),
     path('tg/api/v1/<str:token>/tg_send_updates/', tg_send_updates),
