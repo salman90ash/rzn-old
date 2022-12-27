@@ -335,7 +335,7 @@ def tg_set_type_sort(request, token, tg_chat_id):
 
 
 @csrf_exempt
-def tg_test(request):
+def tg_test(request, token):
     url = 'https://roszdravnadzor.gov.ru/services/cab_mi?type_search=1&letters=0&in_doc_num=94941&in_doc_dt=24.12.2021'
     html = get_page(url)
     user_dict = {
