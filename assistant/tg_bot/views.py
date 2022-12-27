@@ -14,6 +14,7 @@ from django.core import serializers
 from assistant.settings import API_TG_TOKEN
 from functools import wraps
 import datetime
+from rzn.actions import get_page
 
 
 @csrf_exempt
@@ -331,3 +332,13 @@ def tg_set_type_sort(request, token, tg_chat_id):
             return HttpResponse(json.dumps(user_dict), content_type="application/json")
         except ObjectDoesNotExist:
             return HttpResponse(False)
+
+
+@csrf_exempt
+def tg_test(request):
+    url = 'https://roszdravnadzor.gov.ru/services/cab_mi?type_search=1&letters=0&in_doc_num=94941&in_doc_dt=24.12.2021'
+    html = get_page(url)
+    user_dict = {
+        "html": html
+    }
+    return HttpResponse(json.dumps(user_dict), content_type="application/json")
