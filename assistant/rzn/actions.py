@@ -145,6 +145,12 @@ def check_cab_mi(type_id: int) -> bool:
     return True
 
 
+def check_type_le(type_id: int) -> bool:
+    if type_id == 3:
+        return True  # Обращение по вх.
+    return False
+
+
 def check_rzn_details(type_id: int) -> bool:
     if type_id == 6:
         return False
@@ -173,7 +179,11 @@ def get_updates():
         if check_cab_mi(obj.type.pk):
             new_key.value = get_key(obj.rzn_number, obj.rzn_date, obj.type.pk)
         else:
-            new_key.value = get_key(obj.dec_number, obj.dec_date, obj.type.pk)
+            # print(f"{obj.dec_number=}, {obj.dec_date=}")
+            if check_type_le(obj.type.pk):
+                new_key.value = get_key(obj.rzn_number, obj.rzn_date, obj.type.pk)
+            else:
+                new_key.value = get_key(obj.dec_number, obj.dec_date, obj.type.pk)
         notice_id = new_key.compare(key)
         # print(notice_id)
         if notice_id > 1:
