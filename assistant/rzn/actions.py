@@ -3,6 +3,10 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from bs4 import BeautifulSoup
 import json
 from rzn.models import TasksData, TasksKey, TasksNotice
+import time
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 RZN_DOMAIN = 'https://roszdravnadzor.gov.ru'
 RZN_TYPES = [(1, 'РУ'), (2, 'Ввоз'), (3, 'Обращение', 'по вх.'), (4, 'ВИРД'), (5, 'Дубликат'),
@@ -74,12 +78,21 @@ def set_url(number: str, date: str, rzn_type: int) -> str:
     return url
 
 
-def get_page(url: str, proxy: dict = {}) -> str:
-    HEADERS = {
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'}
-    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-    r = requests.get(url, headers=HEADERS, proxies=proxy, verify=False)
-    return r.text
+# def get_page(url: str, proxy: dict = {}) -> str:
+#     HEADERS = {
+#         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'}
+#     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+#     r = requests.get(url, headers=HEADERS, proxies=proxy, verify=False)
+#     return r.text
+
+def get_page(url: str) -> str:
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service)
+    try:
+        driver.get(url=url)
+        return driver.page_source
+    except Exception as e:
+        print(e)
 
 
 def get_table_of_cab_mi(html: str) -> str:
@@ -174,7 +187,7 @@ def get_updates():
     objs = TasksData.objects.filter(is_active=True, completed=False, notice=1)
     for obj in objs:
         key = TasksKey.objects.get(is_active=True, data=obj.pk)
-        # print(obj.key.value)
+        print(obj)
         new_key: TasksKey = TasksKey()
         if check_cab_mi(obj.type.pk):
             new_key.value = get_key(obj.rzn_number, obj.rzn_date, obj.type.pk)
@@ -197,6 +210,7 @@ def get_updates():
             obj.save()
             # print(f"{new_key.pk=}")
             # print(obj)
+        time.sleep(2)
 
 
 def get_last_row_cam_mi(data: list):
