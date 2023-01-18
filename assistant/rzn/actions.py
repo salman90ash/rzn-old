@@ -5,8 +5,11 @@ import json
 from rzn.models import TasksData, TasksKey, TasksNotice
 import time
 from selenium import webdriver
+from seleniumwire import webdriver
+from selenium_stealth import stealth
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from assistant.settings import PROXY_OPTIONS
 
 RZN_DOMAIN = 'https://roszdravnadzor.gov.ru'
 RZN_TYPES = [(1, 'РУ'), (2, 'Ввоз'), (3, 'Обращение', 'по вх.'), (4, 'ВИРД'), (5, 'Дубликат'),
@@ -85,14 +88,86 @@ def set_url(number: str, date: str, rzn_type: int) -> str:
 #     r = requests.get(url, headers=HEADERS, proxies=proxy, verify=False)
 #     return r.text
 
-def get_page(url: str) -> str:
+def get_page_old(url: str) -> str:
+    options = webdriver.ChromeOptions()
+    options.add_argument('headless')
+    options.add_argument('--no-sandbox')
     service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service)
+    driver = webdriver.Chrome(options=options, service=service)
     try:
         driver.get(url=url)
         return driver.page_source
     except Exception as e:
         print(e)
+
+
+def get_page(url: str, proxy: bool = False) -> str:
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("start-maximized")
+    chrome_options.add_argument('headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--window-size=1920,1080')
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option('useAutomationExtension', False)
+    global PROXY_OPTIONS
+    if proxy:
+        seleniumwire_options = {
+            'proxy': {
+                'http': f'http://{PROXY_OPTIONS}',
+                'https': f'https://{PROXY_OPTIONS}',
+                'no_proxy': 'localhost,127.0.0.1'
+            }
+        }
+        chrome = webdriver.Chrome(executable_path=r"/home/student/chromedriver",
+                                  service=Service(ChromeDriverManager().install()),
+                                  options=chrome_options,
+                                  seleniumwire_options=seleniumwire_options)
+
+        stealth(
+            driver=chrome,
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36(KHTML, like Gecko)Chrome/109.0.0.0 Safari/537.36",
+            languages=["ru", "en"],
+            platform="Win32",
+            webgl_vendor="Google Inc. (NVIDIA)",
+            renderer="ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Ti Direct3D11 vs_5_0 ps_5_0, D3D11)",
+            fix_hairline=True,
+            run_on_insecure_origins=False
+        )
+    else:
+        seleniumwire_options = {
+            'proxy': {
+                'http': f'http://{PROXY_OPTIONS}',
+                'https': f'https://{PROXY_OPTIONS}',
+                'no_proxy': 'localhost,127.0.0.1'
+            }
+        }
+        chrome = webdriver.Chrome(executable_path=r"/home/student/chromedriver",
+                                  service=Service(ChromeDriverManager().install()),
+                                  options=chrome_options,
+                                  seleniumwire_options=seleniumwire_options)
+
+        stealth(
+            driver=chrome,
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36(KHTML, like Gecko)Chrome/109.0.0.0 Safari/537.36",
+            languages=["ru", "en"],
+            platform="Win32",
+            webgl_vendor="Google Inc. (NVIDIA)",
+            renderer="ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Ti Direct3D11 vs_5_0 ps_5_0, D3D11)",
+            fix_hairline=True,
+            run_on_insecure_origins=False
+        )
+    try:
+        chrome.get(url=url)
+        time.sleep(1)
+        # with open("page.html", "w") as f:
+        #     f.write(chrome.page_source)
+        # chrome.save_screenshot("screenshot.png")
+        return chrome.page_source
+    except Exception as e:
+        print(e)
+    finally:
+        chrome.close()
+        chrome.quit()
 
 
 def get_table_of_cab_mi(html: str) -> str:

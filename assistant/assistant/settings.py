@@ -141,3 +141,4 @@ REST_FRAMEWORK = {
 }
 
 API_TG_TOKEN = os.environ.get('API_TG_TOKEN')
+PROXY_OPTIONS = os.environ.get('PROXY_OPTIONS')
