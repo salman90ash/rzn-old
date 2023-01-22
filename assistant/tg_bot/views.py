@@ -335,10 +335,13 @@ def tg_set_type_sort(request, token, tg_chat_id):
 
 
 @csrf_exempt
-def tg_test(request, token):
-    url = 'https://roszdravnadzor.gov.ru/services/cab_mi?type_search=1&letters=0&in_doc_num=94941&in_doc_dt=24.12.2021'
-    html = get_page(url=url, proxy=True)
+def rzn_status(request, token):
+    url = 'https://roszdravnadzor.gov.ru/services/cab_mi'
+    html = actions.get_page_old(url=url, proxy=True)
+    availability = False
+    if 'Входящий номер заявления' in html:
+        availability = True
     user_dict = {
-        "html": html
+        "availability": availability
     }
     return HttpResponse(json.dumps(user_dict), content_type="application/json")

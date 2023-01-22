@@ -2,6 +2,10 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from bs4 import BeautifulSoup
 import json
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.select import Select
+
 from rzn.models import TasksData, TasksKey, TasksNotice
 import time
 from selenium import webdriver
@@ -81,27 +85,7 @@ def set_url(number: str, date: str, rzn_type: int) -> str:
     return url
 
 
-# def get_page(url: str, proxy: dict = {}) -> str:
-#     HEADERS = {
-#         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'}
-#     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-#     r = requests.get(url, headers=HEADERS, proxies=proxy, verify=False)
-#     return r.text
-
-def get_page_old(url: str) -> str:
-    options = webdriver.ChromeOptions()
-    options.add_argument('headless')
-    options.add_argument('--no-sandbox')
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(options=options, service=service)
-    try:
-        driver.get(url=url)
-        return driver.page_source
-    except Exception as e:
-        print(e)
-
-
-def get_page(url: str, proxy: bool = False) -> str:
+def get_page_old(url: str, proxy: bool = False) -> str:
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("start-maximized")
     chrome_options.add_argument('headless')
@@ -159,6 +143,92 @@ def get_page(url: str, proxy: bool = False) -> str:
     try:
         chrome.get(url=url)
         time.sleep(1)
+        # with open("page.html", "w") as f:
+        #     f.write(chrome.page_source)
+        # chrome.save_screenshot("screenshot.png")
+        return chrome.page_source
+    except Exception as e:
+        print(e)
+    finally:
+        chrome.close()
+        chrome.quit()
+
+
+def get_page(number: str, date: str, type: int, proxy: bool = False) -> str:
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("start-maximized")
+    chrome_options.add_argument('headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--window-size=1920,1080')
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option('useAutomationExtension', False)
+    global PROXY_OPTIONS
+    if proxy:
+        seleniumwire_options = {
+            'proxy': {
+                'http': f'http://{PROXY_OPTIONS}',
+                'https': f'https://{PROXY_OPTIONS}',
+                'no_proxy': 'localhost,127.0.0.1'
+            }
+        }
+        chrome = webdriver.Chrome(executable_path=r"/home/student/chromedriver",
+                                  service=Service(ChromeDriverManager().install()),
+                                  options=chrome_options,
+                                  seleniumwire_options=seleniumwire_options)
+    else:
+        seleniumwire_options = {
+            'proxy': {
+                'http': f'http://{PROXY_OPTIONS}',
+                'https': f'https://{PROXY_OPTIONS}',
+                'no_proxy': 'localhost,127.0.0.1'
+            }
+        }
+        chrome = webdriver.Chrome(executable_path=r"/home/student/chromedriver",
+                                  service=Service(ChromeDriverManager().install()),
+                                  options=chrome_options,
+                                  seleniumwire_options=seleniumwire_options)
+
+    stealth(
+        driver=chrome,
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36(KHTML, like Gecko)Chrome/109.0.0.0 Safari/537.36",
+        languages=["ru", "en"],
+        platform="Win32",
+        webgl_vendor="Google Inc. (NVIDIA)",
+        renderer="ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Ti Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        fix_hairline=True,
+        run_on_insecure_origins=False
+    )
+    try:
+        if type == 1 or type == 4 or type == 5:
+            chrome.get('https://roszdravnadzor.gov.ru/services/cab_mi')
+            time.sleep(2)
+            id_in_doc_num = chrome.find_element(by=By.ID, value='id_in_doc_num')
+            id_in_doc_num.send_keys(number)
+            id_in_doc_num = chrome.find_element(by=By.ID, value='id_in_doc_dt')
+            id_in_doc_num.send_keys(date)
+            time.sleep(3)
+            search = chrome.find_element(by=By.XPATH, value="/html/body/div[1]/div[5]/div/div/div[2]/div/form/button")
+            search.click()
+        else:
+            chrome.get('https://roszdravnadzor.gov.ru/services/le')
+            time.sleep(2)
+            id_in_doc_num = chrome.find_element(by=By.ID, value='id_doc_num')
+            id_in_doc_num.send_keys(number)
+            id_in_doc_num = chrome.find_element(by=By.ID, value='id_doc_dt')
+            id_in_doc_num.send_keys(date)
+            if type == 3:
+                type_select = Select(chrome.find_element(by=By.ID, value='id_doc_type'))
+                type_select.select_by_value('1')
+            else:
+                type_select = Select(chrome.find_element(by=By.ID, value='id_doc_type'))
+                type_select.select_by_value('2')
+            time.sleep(4)
+            search = chrome.find_element(by=By.XPATH,
+                                         value="/html/body/div[1]/div[6]/div/div/div[2]/div[2]/form/button")
+            search.click()
+
+        # print(search.text)
+
         # with open("page.html", "w") as f:
         #     f.write(chrome.page_source)
         # chrome.save_screenshot("screenshot.png")
@@ -246,8 +316,9 @@ def check_rzn_details(type_id: int) -> bool:
 
 
 def get_key(number: str, date: str, type_id: int):
-    url = set_url(number, date, type_id)
-    html = get_page(url)
+    # url = set_url(number, date, type_id)
+    # html = get_page(url)
+    html = get_page(number=number, date=date, type=type_id, proxy=True)
     if check_cab_mi(type_id):
         return get_key_cab_mi(html)
     else:
@@ -267,24 +338,19 @@ def get_updates():
         if check_cab_mi(obj.type.pk):
             new_key.value = get_key(obj.rzn_number, obj.rzn_date, obj.type.pk)
         else:
-            # print(f"{obj.dec_number=}, {obj.dec_date=}")
             if check_type_le(obj.type.pk):
                 new_key.value = get_key(obj.rzn_number, obj.rzn_date, obj.type.pk)
             else:
                 new_key.value = get_key(obj.dec_number, obj.dec_date, obj.type.pk)
         notice_id = new_key.compare(key)
-        # print(notice_id)
         if notice_id > 1:
             key.is_active = False
             key.save()
             new_key.data = obj
             new_key.save()
             notice = TasksNotice.objects.get(pk=notice_id)
-            # print(notice)
             obj.notice = notice
             obj.save()
-            # print(f"{new_key.pk=}")
-            # print(obj)
         time.sleep(2)
 
 
@@ -350,4 +416,4 @@ def get_title_task_details(title, task_type_id, task_type_title, number, date):
 
 def update_tasks():
     get_updates()
-    # completeness_check_all()
+    completeness_check_all()
