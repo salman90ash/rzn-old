@@ -336,12 +336,16 @@ def tg_set_type_sort(request, token, tg_chat_id):
 
 @csrf_exempt
 def rzn_status(request, token):
-    url = 'https://roszdravnadzor.gov.ru/services/cab_mi'
-    html = actions.get_page_old(url=url, proxy=True)
     availability = False
-    if 'Входящий номер заявления' in html:
-        availability = True
     user_dict = {
         "availability": availability
     }
+    try:
+        url = 'https://roszdravnadzor.gov.ru/services/cab_mi'
+        html = actions.get_page_old(url=url, proxy=True)
+        if 'Входящий номер заявления' in html:
+            availability = True
+            user_dict['availability'] = availability
+    except Exception as e:
+        print(e)
     return HttpResponse(json.dumps(user_dict), content_type="application/json")
